@@ -10,3 +10,7 @@ MarkdownBlog is a simple yet powerful blog platform where users can create and m
 - [License](#license)
 
 
+## Setup and Installation
+- docker
+- flask
+- Make
