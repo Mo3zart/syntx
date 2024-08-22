@@ -3,7 +3,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-from config import config_by_name
+from db_config import config_by_name
 
 # Initialize the database
 db = SQLAlchemy()
@@ -13,7 +13,7 @@ def create_app(config_name="dev"):
     """Initialize the Flask application."""
     app = Flask(__name__)
 
-    # Load the config from the object in config.py
+    # Load the config from the object in db_config.py
     app.config.from_object(config_by_name[config_name])
 
     # Initialize the extensions
