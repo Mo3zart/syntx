@@ -1,7 +1,7 @@
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0  # Check for the latest version
+    rev: v4.4.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -14,12 +14,8 @@ repos:
     rev: v0.6.1
     hooks:
       - id: ruff
-        args: [
-          "--select", "E,F,W,C,N,B,B9,COM,PL,D",  # Include relevant checks from other tools
-          "--fix",  # Auto-fix issues where possible
-          "--line-length", "112",
-        ]
-        additional_dependencies: ["darglint"]  # Include any additional plugins
+        args: [ "--fix" ]
+        additional_dependencies: [ "darglint" ]
 
   - repo: https://github.com/psf/black
     rev: 24.8.0

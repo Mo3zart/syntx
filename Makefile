@@ -62,3 +62,9 @@ remove-volume:
 clean:
 	@make stop-container
 	@make remove-volume
+
+# Pre-commit
+.PHONY: pc
+pc:
+	@echo "Running pre-commit..."
+	pre-commit  run --all-files
