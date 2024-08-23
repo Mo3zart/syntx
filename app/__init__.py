@@ -19,4 +19,12 @@ def create_app(config_name="dev"):
     # Initialize the extensions
     db.init_app(app)
 
+    # Import and register blueprints
+    from app.api.auth_routes import auth_blueprint
+
+    # from app.models.user_model import User
+    # from app.models.user_profile_model import UserProfile
+
+    app.register_blueprint(auth_blueprint, url_prefix="/api/authentication")
+
     return app
