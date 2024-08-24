@@ -1,0 +1,27 @@
+# pyproject.toml
+
+[tool.ruff]
+line-length = 112
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "W",
+    "C",
+    "N",
+    "B",
+    "B9",
+    "COM",
+    "PL",
+    "D"
+]
+ignore = [
+    "D102",
+    "D105",
+    "D107",
+    "D203",
+    "D212",
+    "PLR0913"  # Ignore the rule for too many arguments
+
+]
