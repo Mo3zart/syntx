@@ -1,7 +1,7 @@
 # pyproject.toml
 
 [tool.ruff]
-line-length = 112
+line-length = 125
 
 [tool.ruff.lint]
 select = [

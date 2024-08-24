@@ -1,4 +1,15 @@
-"""user_model.py."""
+"""
+User model for representing users in the system.
+
+This module defines the `User` class, which represents users within the system. It includes
+attributes such as username, email, password hash, role, and the creation timestamp. The class
+also provides methods for converting user data into a dictionary format and for representing
+the user object as a string.
+
+Classes:
+    - User: Represents a user with attributes like `username`, `email`, `password_hash`, `role`,
+      and `created_at`.
+"""
 
 from sqlalchemy import Column, DateTime, Integer, String, func
 
@@ -30,9 +41,7 @@ class User(db.Model):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):
-        return (
-            f"<User: {self.id}, {self.username}>, {self.email}>, {self.role}>, {self.created_at}>, {self.id}>"
-        )
+        return f"<User: {self.id}, {self.username}>, {self.email}>, {self.role}>, {self.created_at}>, {self.id}>"
 
     def __str__(self):
         """Return a string representation of the user."""

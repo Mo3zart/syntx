@@ -1,4 +1,15 @@
-"""user_profile_model.py."""
+"""
+User profile model for representing user profiles in the system.
+
+This module defines the `UserProfile` class, which represents user profiles associated with users
+in the system. It includes attributes such as first name, last name, date of birth, profile picture URL,
+bio, website URL, and the last updated timestamp. The `UserProfile` class is linked to the `User` class
+via a foreign key relationship.
+
+Classes:
+    - UserProfile: Represents a user's profile with attributes like `user_id`, `first_name`,
+      `last_name`, `date_of_birth`, `profile_picture_url`, `bio`, `website_url`, and `updated_at`.
+"""
 
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import relationship
