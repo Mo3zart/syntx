@@ -1,7 +1,7 @@
 """
-Email validation utility module.
+Validation utility module.
 
-This module provides functions for validating email addresses. It supports basic format validation
+This module provides functions for validating email addresses and passwords. It supports basic format validation
 using a regular expression, advanced validation with the `email-validator` library, and optional
 MX record validation to check if the domain can receive emails.
 
@@ -14,6 +14,7 @@ Functions:
 
 import logging
 import re
+from typing import Dict
 
 import dns.resolver
 from dns.exception import DNSException
@@ -123,3 +124,49 @@ def validate_email_address(email, check_mx=True, debug=False):
     except EmailNotValidError as e:
         logger.debug("EmailNotValidError: %s", e)
         return False
+
+
+# Password validation
+MIN_LENGTH = 8
+MAX_LENGTH = 20
+SPECIAL_CHARACTERS = ["!", "@", "#", "$", "%", "^", "&", "*", "-"]
+
+
+def validate_password(password: str) -> Dict[str, any]:
+    """
+    Validate the given password against predefined criteria.
+
+    Args:
+    ----
+        password (str): The password to validate.
+
+    Returns:
+    -------
+        dict: A dictionary with `is_valid` (bool) indicating if the password is valid,
+              and `errors` (list) containing error messages if the password is invalid.
+
+    """
+    errors = []
+
+    if len(password) < MIN_LENGTH:
+        errors.append(f"Password must be at least {MIN_LENGTH} characters long")
+
+    if len(password) > MAX_LENGTH:
+        errors.append(f"Password must be at most {MAX_LENGTH} characters long")
+
+    if not any(char.isdigit() for char in password):
+        errors.append("Password must contain at least one number")
+
+    if not any(char.isalpha() for char in password):
+        errors.append("Password must contain at least one letter")
+
+    if not any(char.isupper() for char in password):
+        errors.append("Password must contain at least one uppercase letter")
+
+    if not any(char.islower() for char in password):
+        errors.append("Password must contain at least one lowercase letter")
+
+    if not any(char in SPECIAL_CHARACTERS for char in password):
+        errors.append("Password must contain at least one special character")
+
+    return {"is_valid": not errors, "errors": errors}
