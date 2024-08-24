@@ -21,7 +21,7 @@ repos:
     rev: 24.8.0
     hooks:
       - id: black
-        args: ["--line-length", "112"]
+        args: ["--line-length", "125"]
 
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.10.1
