@@ -1,7 +1,6 @@
 """auth_routes.py."""
 
-import hashlib
-
+import bcrypt
 from flask import Blueprint, jsonify, request
 
 from app import db
@@ -26,11 +25,11 @@ def sign_up():
     ):
         return jsonify(status=400, messages="User with this email or username already exists"), 400
 
-    # Hash the password
-    hashed_password = hashlib.sha256(data["password"].encode("utf-8")).hexdigest()
+    # Hash the password using bcrypt
+    hashed_password = bcrypt.hashpw(data["password"].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     # Create a new User object
-    new_user = User(data["username"], data["email"], hashed_password)
+    new_user = User(data["username"], data["email"], hashed_password, role="user")
 
     # Add the new user to the session and commit to the database
     db.session.add(new_user)
@@ -50,22 +49,19 @@ def sign_in():
     if not data or "username_or_email" not in data or "password" not in data:
         return jsonify({"error": "Missing required fields: 'username_or_email' or 'password'"}), 400
 
+    username_or_email = data.get("username_or_email")
+
     # Find the user by email or username
     user = User.query.filter(
-        (User.username == data["username_or_email"]) | (User.email == data["username_or_email"]),
+        (User.username == username_or_email) | (User.email == username_or_email),
     ).first()
 
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    # Hash the incoming password
-    hashed_password = hashlib.sha256(data["password"].encode("utf-8")).hexdigest()
+    # Verify the password using bcrypt
+    if not bcrypt.checkpw(data["password"].encode("utf-8"), user.password_hash.encode("utf-8")):
+        return jsonify(status=410, message="error: Invalid password"), 401
 
-    # Verify the password
-    if user.password_hash != hashed_password:
-        return jsonify({"error": "Invalid password"}), 401
-
-    # If valid, return a success response (you might generate a token here)
-    # Placeholder for token generation or any other login process
-    # For simplicity, we're just returning a success message here
+    # If valid, return a success response
     return jsonify({"message": "Login successful", "user_id": user.id}), 200
