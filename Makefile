@@ -64,7 +64,7 @@ clean:
 	@make remove-volume
 
 # Pre-commit
-.PHONY: pc
-pc:
+.PHONY: pre
+pre:
 	@echo "Running pre-commit..."
 	pre-commit  run --all-files

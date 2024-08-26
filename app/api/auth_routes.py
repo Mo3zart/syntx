@@ -48,15 +48,14 @@ def sign_up():
     if not validate_email_address(data["email"], check_mx=True):
         return jsonify(status=400, message="Invalid email address"), 400
 
-    password_validation = validate_password(data.get("password", ""))
-
-    # Check if password is valid
-    if not password_validation["is_valid"]:
-        return jsonify({"error": "Password validation failed", "details": password_validation["errors"]}), 400
+    # Validate the password
+    is_valid_password, password_errors = validate_password(data["password"])
+    if not is_valid_password:
+        return jsonify({"error": "Password validation failed", "details": password_errors}), 400
 
     # Check if user already exists
     if User.query.filter_by(username=data["username"]).first() or User.query.filter_by(email=data["email"]).first():
-        return jsonify(status=400, messages="User with this email or username already exists"), 400
+        return jsonify(status=400, message="User with this email or username already exists"), 400
 
     # Hash the password using bcrypt
     hashed_password = bcrypt.hashpw(data["password"].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
