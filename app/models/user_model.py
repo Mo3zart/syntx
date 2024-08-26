@@ -11,6 +11,7 @@ Classes:
       and `created_at`.
 """
 
+import bcrypt
 from sqlalchemy import Column, DateTime, Integer, String, func
 
 from app import db
@@ -47,7 +48,14 @@ class User(db.Model):
         """Return a string representation of the user."""
         return f"User: {self.id}, {self.username}, email: {self.email}, role: {self.role}>"
 
+    def __init__(self, username, email, password, role):
+        self.username = username
+        self.email = email
+        self.password_hash = self.set_password(password)
+        self.role = role
+
     def to_dict(self):
+        """Return a dictionary representation of the user."""
         return {
             "id": self.id,
             "username": self.username,
@@ -56,8 +64,33 @@ class User(db.Model):
             "created_at": self.created_at.isoformat(),
         }
 
-    def __init__(self, username, email, password_hash, role):
-        self.username = username
-        self.email = email
-        self.password_hash = password_hash
-        self.role = role
+    def set_password(self, password):
+        """Hash and set the password."""
+        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+    def check_password(self, password):
+        """Check the hashed password."""
+        return bcrypt.checkpw(password.encode("utf-8"), self.password_hash.encode("utf-8"))
+
+    def save(self):
+        """Save the user to the database."""
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self, **kwargs):
+        """Update the user's attributes."""
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+
+    def delete(self):
+        """Delete the user from the database."""
+        db.session.delete(self)
+        db.session.commit()
+
+    @classmethod
+    def find_by_username_or_email(cls, identifier):
+        """Find a user by its username or email."""
+        return cls.query.filter(
+            (cls.username == identifier) | (cls.email == identifier),
+        ).first()

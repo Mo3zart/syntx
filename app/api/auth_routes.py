@@ -9,10 +9,8 @@ Routes:
     - POST /signin: Handle user sign-in.
 """
 
-import bcrypt
 from flask import Blueprint, jsonify, request
 
-from app import db
 from app.models.user_model import User
 from utils.validation import validate_email_address, validate_password
 
@@ -57,15 +55,16 @@ def sign_up():
     if User.query.filter_by(username=data["username"]).first() or User.query.filter_by(email=data["email"]).first():
         return jsonify(status=400, message="User with this email or username already exists"), 400
 
-    # Hash the password using bcrypt
-    hashed_password = bcrypt.hashpw(data["password"].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
     # Create a new User object
-    new_user = User(data["username"], data["email"], hashed_password, role="user")
+    new_user = User(
+        username=data["username"],
+        email=data["email"],
+        password=data["password"],
+        role="user",
+    )
 
     # Add the new user to the session and commit to the database
-    db.session.add(new_user)
-    db.session.commit()
+    new_user.save()
 
     # Return a success response
     return jsonify({"message": "User created successfully"}), 201
@@ -99,16 +98,14 @@ def sign_in():
     username_or_email = data.get("username_or_email")
 
     # Find the user by email or username
-    user = User.query.filter(
-        (User.username == username_or_email) | (User.email == username_or_email),
-    ).first()
+    user = User.find_by_username_or_email(username_or_email)
 
     if not user:
         return jsonify({"error": "User not found"}), 404
 
     # Verify the password using bcrypt
-    if not bcrypt.checkpw(data["password"].encode("utf-8"), user.password_hash.encode("utf-8")):
-        return jsonify(status=410, message="error: Invalid password"), 401
+    if not user.check_password(data["password"]):
+        return jsonify({"error": "Password validation failed"}), 400
 
     # If valid, return a success response
     return jsonify({"message": "Login successful", "user_id": user.id}), 200
