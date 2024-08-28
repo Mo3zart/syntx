@@ -12,6 +12,7 @@ Routes:
 from flask import Blueprint, jsonify, request
 
 from app.models.user_model import User
+from utils.database import save_to_db
 from utils.validation import validate_email_address, validate_password
 
 auth_blueprint = Blueprint("auth_api", __name__)
@@ -64,7 +65,7 @@ def sign_up():
     )
 
     # Add the new user to the session and commit to the database
-    new_user.save()
+    save_to_db(new_user)
 
     # Return a success response
     return jsonify({"message": "User created successfully"}), 201

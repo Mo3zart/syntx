@@ -67,21 +67,6 @@ class Posts(db.Model):
             "updated_at": self.updated_at,
         }
 
-    def save_to_db(self):
-        """Save the post to the database."""
-        db.session.add(self)
-        db.session.commit()
-
-    def update_post(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-        self.updated_at = datetime.now(timezone.utc)
-        db.session.commit()
-
-    def delete_post(self):
-        db.session.delete(self)
-        db.session.commit()
-
     @classmethod
     def find_by_id(cls, post_id):
         return cls.query.get(post_id)

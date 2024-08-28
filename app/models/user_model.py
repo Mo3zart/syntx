@@ -72,20 +72,10 @@ class User(db.Model):
         """Check the hashed password."""
         return bcrypt.checkpw(password.encode("utf-8"), self.password_hash.encode("utf-8"))
 
-    def save(self):
-        """Save the user to the database."""
-        db.session.add(self)
-        db.session.commit()
-
     def update(self, **kwargs):
         """Update the user's attributes."""
         for key, value in kwargs.items():
             setattr(self, key, value)
-        db.session.commit()
-
-    def delete(self):
-        """Delete the user from the database."""
-        db.session.delete(self)
         db.session.commit()
 
     @classmethod
