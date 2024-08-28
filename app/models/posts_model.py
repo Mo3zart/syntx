@@ -50,14 +50,6 @@ class Posts(db.Model):
     def __str__(self):
         """Return a string representation of the post."""
         return f"Post: {self.id}, {self.title}, {self.content}, Created: {self.created_at}, {self.status}, {self.updated_at}"
-        # return {
-        #     "id": self.id,
-        #     "title": self.title,
-        #     "content": self.content,
-        #     "status": self.status,
-        #     "created_at": self.created_at,
-        #     "updated_at": self.updated_at,
-        # }
 
     def __init__(self, title, content, status):
         self.title = title
