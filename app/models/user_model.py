@@ -39,7 +39,7 @@ class User(db.Model):
     email = Column(String(50), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     role = Column(String(50), default="user")
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<User: {self.id}, {self.username}>, {self.email}>, {self.role}>, {self.created_at}>, {self.id}>"
