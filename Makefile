@@ -14,9 +14,6 @@ IMAGE_NAME=tt-postgres:latest
 # Define container name
 CONTAINER_NAME=$(DEV_CONTAINER_NAME)
 
-# Path to SQL script
-#SQL_SCRIPT_PATH=path/to/your/script.sql
-
 # Build Docker image, create and run the container, initialize the database, and export connection info
 .PHONY: build-dev-db
 build-dev-db:
@@ -64,7 +61,7 @@ clean:
 	@make remove-volume
 
 # Pre-commit
-.PHONY: pc
-pc:
+.PHONY: pre
+pre:
 	@echo "Running pre-commit..."
 	pre-commit  run --all-files

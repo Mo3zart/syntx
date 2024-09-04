@@ -14,7 +14,6 @@ Functions:
 
 import logging
 import re
-from typing import Dict
 
 import dns.resolver
 from dns.exception import DNSException
@@ -126,47 +125,67 @@ def validate_email_address(email, check_mx=True, debug=False):
         return False
 
 
-# Password validation
-MIN_LENGTH = 8
-MAX_LENGTH = 20
-SPECIAL_CHARACTERS = ["!", "@", "#", "$", "%", "^", "&", "*", "-"]
-
-
-def validate_password(password: str) -> Dict[str, any]:
+def validate_password(password):
     """
-    Validate the given password against predefined criteria.
+    Validate a password to ensure it meets specific security criteria.
+
+    The password must:
+        - Be at least 8 characters long.
+        - Not be more than 20 characters long.
+        - Contain at least one digit.
+        - Contain at least one uppercase letter.
+        - Contain at least one lowercase letter.
+        - Contain at least one special symbol from the following: !, @, #, $, %, ^, &, *, -
 
     Args:
     ----
-        password (str): The password to validate.
+        password (str): The password string to validate.
 
     Returns:
     -------
-        dict: A dictionary with `is_valid` (bool) indicating if the password is valid,
-              and `errors` (list) containing error messages if the password is invalid.
+        bool: True if the password meets all the requirements, False otherwise.
+        list: A list of error messages indicating which requirements were not met.
 
     """
     errors = []
+    special_sym = ["!", "@", "#", "$", "%", "^", "&", "*", "-"]
+    val = True
 
-    if len(password) < MIN_LENGTH:
-        errors.append(f"Password must be at least {MIN_LENGTH} characters long")
+    if len(password) < 8:
+        errors.append("Password must be at least 8 characters long")
+        val = False
+    if len(password) > 20:
+        errors.append("Password should not be more than 20 characters long")
+        val = False
 
-    if len(password) > MAX_LENGTH:
-        errors.append(f"Password must be at most {MAX_LENGTH} characters long")
+    # Check if password contains at least one digit, uppercase letter, lowercase letter, and special symbol
+    has_digit = False
+    has_upper = False
+    has_lower = False
+    has_symbol = False
 
-    if not any(char.isdigit() for char in password):
-        errors.append("Password must contain at least one number")
+    # Check the characters in the password using ASCII
+    for char in password:
+        if 48 <= ord(char) <= 57:
+            has_digit = True
+        elif 65 <= ord(char) <= 90:
+            has_upper = True
+        elif 97 <= ord(char) <= 122:
+            has_lower = True
+        elif char in special_sym:
+            has_symbol = True
 
-    if not any(char.isalpha() for char in password):
-        errors.append("Password must contain at least one letter")
-
-    if not any(char.isupper() for char in password):
+    if not has_digit:
+        errors.append("Password must contain at least one digit")
+        val = False
+    if not has_upper:
         errors.append("Password must contain at least one uppercase letter")
-
-    if not any(char.islower() for char in password):
+        val = False
+    if not has_lower:
         errors.append("Password must contain at least one lowercase letter")
+        val = False
+    if not has_symbol:
+        errors.append("Password must contain at least one special symbol")
+        val = False
 
-    if not any(char in SPECIAL_CHARACTERS for char in password):
-        errors.append("Password must contain at least one special character")
-
-    return {"is_valid": not errors, "errors": errors}
+    return val, errors
