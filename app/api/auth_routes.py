@@ -9,11 +9,15 @@ Routes:
     - POST /signin: Handle user sign-in.
 """
 
+from dotenv import load_dotenv
 from flask import Blueprint, jsonify, request
 
 from app.models.user_model import User
 from utils.database import save_to_db
+from utils.jwt_utils import generate_token
 from utils.validation import validate_email_address, validate_password
+
+load_dotenv()
 
 auth_blueprint = Blueprint("auth_api", __name__)
 
@@ -108,5 +112,8 @@ def sign_in():
     if not user.check_password(data["password"]):
         return jsonify({"error": "Password validation failed"}), 400
 
+    # Generate JWT token
+    token = generate_token(user.id)
+
     # If valid, return a success response
-    return jsonify({"message": "Login successful", "user_id": user.id}), 200
+    return jsonify({"message": "Login successful", "token": token}), 200
