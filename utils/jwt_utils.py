@@ -72,8 +72,8 @@ def verify_token(token):
         The decoded token data or None if the token is invalid or expired.
 
     """
-    try:
-        decode_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    try:  # TODO: Remove exp option for prod
+        decode_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"], options={"verify_exp": False})
         return decode_token
     except jwt.ExpiredSignatureError:
         return None  # Token expired

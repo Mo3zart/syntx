@@ -116,4 +116,4 @@ def sign_in():
     token = generate_token(user.id)
 
     # If valid, return a success response
-    return jsonify({"message": "Login successful", "token": token}), 200
+    return jsonify({"message": "Login successful", "user_id": user.id, "token": token}), 200
