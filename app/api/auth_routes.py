@@ -80,8 +80,15 @@ def sign_up():
     # Add the new user to the session and commit to the database
     save_to_db(new_user)
 
+    # Get JWT token
+    access_token = generate_token(new_user.id)
+    refresh_token = generate_refresh_token(new_user.id)
+
     # Return a success response
-    return jsonify({"message": "User created successfully"}), 201
+    return (
+        jsonify({"message": "User created successfully", "access_token": access_token, "refresh_token": refresh_token}),
+        201,
+    )
 
 
 @auth_blueprint.route("/signin", methods=["POST"])

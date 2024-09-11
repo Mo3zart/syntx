@@ -14,7 +14,7 @@ def create_app(config_name="dev"):
     """Initialize the Flask application."""
     app = Flask(__name__)
 
-    CORS(app)
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # Load the config from the object in db_config.py
     app.config.from_object(config_by_name[config_name])
