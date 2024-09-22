@@ -91,7 +91,7 @@ def sign_up():
     )
 
 
-@auth_blueprint.route("/signin", methods=["POST"])
+@auth_blueprint.route("/login", methods=["POST"])
 def sign_in():
     """
     Handle user sign-in.
