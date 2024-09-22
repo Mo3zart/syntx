@@ -1,6 +1,7 @@
 """__inti__.py."""
 
 from flask import Flask
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
 from db_config import config_by_name
@@ -12,6 +13,8 @@ db = SQLAlchemy()
 def create_app(config_name="dev"):
     """Initialize the Flask application."""
     app = Flask(__name__)
+
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # Load the config from the object in db_config.py
     app.config.from_object(config_by_name[config_name])

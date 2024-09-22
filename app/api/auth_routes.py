@@ -7,13 +7,26 @@ endpoints. Passwords are hashed using bcrypt, and email validation is performed 
 Routes:
     - POST /signup: Handle user sign-up.
     - POST /signin: Handle user sign-in.
+    - POST /refresh: Handle refresh token to generate new access token.
+    - POST /logout: Blacklist the token and handle user logout.
 """
 
+import jwt
+from dotenv import load_dotenv
 from flask import Blueprint, jsonify, request
 
 from app.models.user_model import User
 from utils.database import save_to_db
+from utils.jwt_utils import (
+    SECRET_KEY,
+    blacklist,
+    generate_refresh_token,
+    generate_token,
+    token_required,
+)
 from utils.validation import validate_email_address, validate_password
+
+load_dotenv()
 
 auth_blueprint = Blueprint("auth_api", __name__)
 
@@ -25,7 +38,7 @@ def sign_up():
 
     This route registers a new user. It performs the following steps:
         - Validates the incoming JSON data to ensure required fields are present.
-        - Validates the email address format and MX records.
+        - Validates the email address format and password strength.
         - Checks if the user already exists by username or email.
         - Hashes the password using bcrypt.
         - Creates a new User object and stores it in the database.
@@ -33,8 +46,8 @@ def sign_up():
 
     Returns
     -------
-        Response: A JSON response with a success message and a 201 status code if the user is created.
-                  If validation fails or the user already exists, it returns a 400 status code with an error message.
+    Response: A JSON response with a success message and a 201 status code if the user is created.
+              If validation fails or the user already exists, it returns a 400 status code with an error message.
 
     """
     data = request.get_json()
@@ -67,8 +80,15 @@ def sign_up():
     # Add the new user to the session and commit to the database
     save_to_db(new_user)
 
+    # Get JWT token
+    access_token = generate_token(new_user.id)
+    refresh_token = generate_refresh_token(new_user.id)
+
     # Return a success response
-    return jsonify({"message": "User created successfully"}), 201
+    return (
+        jsonify({"message": "User created successfully", "access_token": access_token, "refresh_token": refresh_token}),
+        201,
+    )
 
 
 @auth_blueprint.route("/signin", methods=["POST"])
@@ -76,20 +96,15 @@ def sign_in():
     """
     Handle user sign-in.
 
-    This route authenticates a user. It performs the following steps:
-        - Validates the incoming JSON data to ensure required fields are present.
-        - Finds the user by either username or email.
-        - Verifies the provided password using bcrypt.
-        - Returns a success response with the user ID if authentication is successful.
+    This route authenticates a user by verifying their credentials and generates an access token
+    and a refresh token for the session.
 
     Returns
     -------
-        Response: A JSON response with a success message and the user ID if authentication is successful.
-                  If validation fails or the user is not found, it returns a 400 or 404 status code with an error message.
-                  If the password is incorrect, it returns a 401 status code with an error message.
+    Response: A JSON response with access and refresh tokens if authentication is successful.
+              If validation fails or the user is not found, it returns a 400 or 404 status code with an error message.
 
     """
-    # Extract and validate incoming JSON data
     data = request.get_json()
 
     # Check if all necessary inputs are given
@@ -108,5 +123,79 @@ def sign_in():
     if not user.check_password(data["password"]):
         return jsonify({"error": "Password validation failed"}), 400
 
+    # Generate JWT token
+    access_token = generate_token(user.id)
+    refresh_token = generate_refresh_token(user.id)
+
     # If valid, return a success response
-    return jsonify({"message": "Login successful", "user_id": user.id}), 200
+    return (
+        jsonify(
+            {
+                "message": "Login successful",
+                "user_id": user.id,
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            },
+        ),
+        200,
+    )
+
+
+@auth_blueprint.route("/refresh", methods=["POST"])
+def refresh_token():
+    """
+    Refresh the access token using a valid refresh token.
+
+    Returns
+    -------
+    Response: A JSON response with a new access token. If the refresh token is invalid or expired,
+              it returns a 401 or 403 status code with an error message.
+
+    """
+    data = request.get_json()
+    refresh_token = data.get("refresh_token")
+    if not refresh_token:
+        return jsonify({"error": "Refresh token missing"}), 400
+
+    try:
+        # Decode the refresh token
+        decode = jwt.decode(refresh_token, SECRET_KEY, algorithms=["HS256"])
+        user = User.query.filter_by(id=decode["user_id"]).first()
+
+        if not user:
+            return jsonify({"error": "Invalid refresh token"}), 401
+
+        new_access_token = generate_token(user.id)
+
+        return jsonify({"access_token": new_access_token}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Refresh token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Invalid token"}), 403
+
+
+@auth_blueprint.route("/logout", methods=["POST"])
+@token_required
+def logout(current_user):
+    """
+    Handle user logout.
+
+    This route blacklists the user's current JWT token, preventing further use of the token.
+
+    Parameters
+    ----------
+    current_user : User
+        The currently authenticated user, passed by the token_required decorator.
+
+    Returns
+    -------
+    Response: A JSON response confirming successful logout.
+
+    """
+    # Get the token from the request
+    token = request.headers["Authorization"].split(" ")[1]
+
+    # Add the token to the blacklist
+    blacklist.add(token)
+
+    return jsonify({"message": "Successfully logged out"}), 200
