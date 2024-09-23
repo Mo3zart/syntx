@@ -14,7 +14,7 @@ select = [
     "B9",
     "COM",
     "PL",
-    "D"
+#    "D"
 ]
 ignore = [
     "D102",

@@ -1,3 +1,5 @@
+"""auth_routes.py."""
+
 import jwt
 from dotenv import load_dotenv
 from flask import Blueprint, jsonify, request
@@ -70,12 +72,16 @@ def sign_up():
               type: string
       400:
         description: Validation error or user already exists
+
     """
     data = request.get_json()
 
     # Check if all necessary inputs are given
     if not data or "username" not in data or "email" not in data or "password" not in data:
-        return jsonify(status=400, message="Missing required fields: 'username', 'email' or 'password'")
+        return jsonify(
+            status=400,
+            message="Missing required fields: 'username', 'email' or 'password'",
+        )
 
     # Check if email is valid
     if not validate_email_address(data["email"], check_mx=True):
@@ -84,11 +90,22 @@ def sign_up():
     # Validate the password
     is_valid_password, password_errors = validate_password(data["password"])
     if not is_valid_password:
-        return jsonify({"error": "Password validation failed", "details": password_errors}), 400
+        return (
+            jsonify(
+                {"error": "Password validation failed", "details": password_errors},
+            ),
+            400,
+        )
 
     # Check if user already exists
     if User.query.filter_by(username=data["username"]).first() or User.query.filter_by(email=data["email"]).first():
-        return jsonify(status=400, message="User with this email or username already exists"), 400
+        return (
+            jsonify(
+                status=400,
+                message="User with this email or username already exists",
+            ),
+            400,
+        )
 
     # Create a new User object
     new_user = User(
@@ -104,7 +121,13 @@ def sign_up():
     refresh_token = generate_refresh_token(new_user.id)
 
     return (
-        jsonify({"message": "User created successfully", "access_token": access_token, "refresh_token": refresh_token}),
+        jsonify(
+            {
+                "message": "User created successfully",
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            },
+        ),
         201,
     )
 
@@ -155,12 +178,18 @@ def sign_in():
         description: Missing required fields or validation failed
       404:
         description: User not found
+
     """
     data = request.get_json()
 
     # Check if all necessary inputs are given
     if not data or "username_or_email" not in data or "password" not in data:
-        return jsonify({"error": "Missing required fields: 'username_or_email' or 'password'"}), 400
+        return (
+            jsonify(
+                {"error": "Missing required fields: 'username_or_email' or 'password'"},
+            ),
+            400,
+        )
 
     username_or_email = data.get("username_or_email")
 
@@ -226,6 +255,7 @@ def refresh_token():
         description: Missing refresh token
       401:
         description: Invalid or expired refresh token
+
     """
     data = request.get_json()
     refresh_token = data.get("refresh_token")
@@ -281,6 +311,7 @@ def logout(current_user):
               type: string
       401:
         description: Invalid token or not provided
+
     """
     # Get the token from the request
     token = request.headers["Authorization"].split(" ")[1]
