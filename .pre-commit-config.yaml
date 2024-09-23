@@ -15,16 +15,10 @@ repos:
     hooks:
       - id: ruff
         args: [ "--fix" ]
-        additional_dependencies: [ "darglint" ]
+#        additional_dependencies: [ "darglint" ]
 
   - repo: https://github.com/psf/black
     rev: 24.8.0
     hooks:
       - id: black
-        args: ["--line-length", "125"]
-
-  - repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.10.1
-    hooks:
-      - id: isort
-        args: ["--profile", "black"]
+        args: ["--skip-string-normalization"]
