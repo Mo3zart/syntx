@@ -28,3 +28,7 @@ ignore = [
     "E501", # Ignore the rule for line too long
 
 ]
+
+[tool.black]
+line-length = 125
+skip-string-normalization = true
