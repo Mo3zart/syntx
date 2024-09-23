@@ -24,6 +24,7 @@ ignore = [
     "D212",
     "PLR0913",  # Ignore the rule for too many arguments
     "PLR2004",  # Ignore the rule for magic values
-    "C901"  # Ingore the rule for to complex functions
+    "C901",  # Ingore the rule for to complex functions
+    "E501", # Ignore the rule for line too long
 
 ]
