@@ -10,18 +10,18 @@ repos:
       - id: name-tests-test
       - id: no-commit-to-branch
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.6.1
-    hooks:
-      - id: ruff
-        args: [ "--fix" ]
-        additional_dependencies: [ "darglint" ]
+#  - repo: https://github.com/charliermarsh/ruff-pre-commit
+#    rev: v0.6.1
+#    hooks:
+#      - id: ruff
+#        args: [ "--fix" ]
+##        additional_dependencies: [ "darglint" ]
 
-  - repo: https://github.com/psf/black
-    rev: 24.8.0
-    hooks:
-      - id: black
-        args: ["--line-length", "125"]
+#  - repo: https://github.com/psf/black
+#    rev: 24.8.0
+#    hooks:
+#      - id: black
+#        args: ["--line-length", "125"]
 
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.10.1

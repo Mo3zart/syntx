@@ -1,16 +1,3 @@
-"""
-Authentication routes for user sign-up and sign-in.
-
-This module provides Flask route handlers for user authentication, including sign-up and sign-in
-endpoints. Passwords are hashed using bcrypt, and email validation is performed during sign-up.
-
-Routes:
-    - POST /signup: Handle user sign-up.
-    - POST /signin: Handle user sign-in.
-    - POST /refresh: Handle refresh token to generate new access token.
-    - POST /logout: Blacklist the token and handle user logout.
-"""
-
 import jwt
 from dotenv import load_dotenv
 from flask import Blueprint, jsonify, request
@@ -44,11 +31,45 @@ def sign_up():
         - Creates a new User object and stores it in the database.
         - Returns a success response with a 201 status code.
 
-    Returns
-    -------
-    Response: A JSON response with a success message and a 201 status code if the user is created.
-              If validation fails or the user already exists, it returns a 400 status code with an error message.
+    Returns:
+        Response: A JSON response with a success message and a 201 status code if the user is created.
+        If validation fails or the user already exists, it returns a 400 status code with an error message.
 
+    ---
+    tags:
+      - Authentication
+    summary: Create a new user
+    description: This route registers a new user. It validates the incoming data, checks for existing users, hashes the password, and returns access and refresh tokens upon success.
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+              description: Username for the new account
+            email:
+              type: string
+              description: User's email
+            password:
+              type: string
+              description: Password for the new account
+    responses:
+      201:
+        description: User created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            access_token:
+              type: string
+            refresh_token:
+              type: string
+      400:
+        description: Validation error or user already exists
     """
     data = request.get_json()
 
@@ -77,14 +98,11 @@ def sign_up():
         role="user",
     )
 
-    # Add the new user to the session and commit to the database
     save_to_db(new_user)
 
-    # Get JWT token
     access_token = generate_token(new_user.id)
     refresh_token = generate_refresh_token(new_user.id)
 
-    # Return a success response
     return (
         jsonify({"message": "User created successfully", "access_token": access_token, "refresh_token": refresh_token}),
         201,
@@ -99,11 +117,44 @@ def sign_in():
     This route authenticates a user by verifying their credentials and generates an access token
     and a refresh token for the session.
 
-    Returns
-    -------
-    Response: A JSON response with access and refresh tokens if authentication is successful.
-              If validation fails or the user is not found, it returns a 400 or 404 status code with an error message.
+    Returns:
+        Response: A JSON response with access and refresh tokens if authentication is successful.
+        If validation fails or the user is not found, it returns a 400 or 404 status code with an error message.
 
+    ---
+    tags:
+      - Authentication
+    summary: Authenticate a user
+    description: This route handles user login by verifying their credentials and generating an access token and refresh token.
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username_or_email:
+              type: string
+              description: Username or email to sign in
+            password:
+              type: string
+              description: User's password
+    responses:
+      200:
+        description: Login successful
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            access_token:
+              type: string
+            refresh_token:
+              type: string
+      400:
+        description: Missing required fields or validation failed
+      404:
+        description: User not found
     """
     data = request.get_json()
 
@@ -123,11 +174,9 @@ def sign_in():
     if not user.check_password(data["password"]):
         return jsonify({"error": "Password validation failed"}), 400
 
-    # Generate JWT token
     access_token = generate_token(user.id)
     refresh_token = generate_refresh_token(user.id)
 
-    # If valid, return a success response
     return (
         jsonify(
             {
@@ -146,11 +195,37 @@ def refresh_token():
     """
     Refresh the access token using a valid refresh token.
 
-    Returns
-    -------
-    Response: A JSON response with a new access token. If the refresh token is invalid or expired,
-              it returns a 401 or 403 status code with an error message.
+    Returns:
+        Response: A JSON response with a new access token. If the refresh token is invalid or expired,
+        it returns a 401 or 403 status code with an error message.
 
+    ---
+    tags:
+      - Authentication
+    summary: Refresh the access token
+    description: This route refreshes the access token using a valid refresh token.
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            refresh_token:
+              type: string
+              description: The refresh token used to get a new access token
+    responses:
+      200:
+        description: New access token generated
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+      400:
+        description: Missing refresh token
+      401:
+        description: Invalid or expired refresh token
     """
     data = request.get_json()
     refresh_token = data.get("refresh_token")
@@ -182,15 +257,30 @@ def logout(current_user):
 
     This route blacklists the user's current JWT token, preventing further use of the token.
 
-    Parameters
-    ----------
-    current_user : User
-        The currently authenticated user, passed by the token_required decorator.
+    Returns:
+        Response: A JSON response confirming successful logout.
 
-    Returns
-    -------
-    Response: A JSON response confirming successful logout.
-
+    ---
+    tags:
+      - Authentication
+    summary: Logout the user
+    description: This route logs out the user by blacklisting the user's current JWT token.
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        type: string
+        description: Bearer token for the user to log out
+    responses:
+      200:
+        description: Successfully logged out
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      401:
+        description: Invalid token or not provided
     """
     # Get the token from the request
     token = request.headers["Authorization"].split(" ")[1]

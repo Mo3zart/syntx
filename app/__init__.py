@@ -1,5 +1,6 @@
 """__inti__.py."""
 
+from flasgger import Swagger
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -21,6 +22,10 @@ def create_app(config_name="dev"):
 
     # Initialize the extensions
     db.init_app(app)
+
+    # Initialize Swagger
+    if config_name == "dev":
+        Swagger(app)
 
     # Import and register blueprints
     from app.api.auth_routes import auth_blueprint
