@@ -1,3 +1,9 @@
+.venv
 setup/datasets
+.idea
+__pycache__
+app/__pycache__
+app/models/__pycache__
+utils/__pycache__
 
 .env.development
