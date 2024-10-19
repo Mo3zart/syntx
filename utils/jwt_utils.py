@@ -134,22 +134,27 @@ def token_required(func):
     def decorated(*args, **kwargs):
         token = None
 
-        # Get token from headers
+        # Check for the Authorization header and extract token
         if "Authorization" in request.headers:
-            token = request.headers["Authorization"].split(" ")[1]  # Expecting "Bearer <token>"
+            auth_header = request.headers["Authorization"]
+            token = auth_header.split(" ")[1] if len(auth_header.split()) > 1 else None
 
         if not token:
             return jsonify({"message": "Token is missing!"}), 403
 
         try:
-            # Decode the token and extract user info
+            # Decode the token to get user information
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
 
             # Check if the token is blacklisted
             if token in blacklist:
                 return jsonify({"message": "Token has been blacklisted!"}), 403
 
+            # Fetch the user from the database using the user_id in the token
             current_user = User.query.filter_by(id=data["user_id"]).first()
+            if not current_user:
+                return jsonify({"message": "User not found!"}), 404
+
         except jwt.ExpiredSignatureError:
             return jsonify({"message": "Token has expired!"}), 403
         except jwt.InvalidTokenError:
